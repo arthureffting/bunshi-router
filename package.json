@@ -1,6 +1,6 @@
 {
   "name": "bunshi-router",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Lightweight router based on bunshi (and jotai)",
   "author": "Effting, Arthur",
   "license": "MIT",
