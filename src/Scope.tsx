@@ -19,20 +19,18 @@ export const RouteProvider = (props: {
 const LocationAtom = atomWithLocation()
 
 export const RouteMolecule = molecule((_, scope) => {
+
     const scopeValue = scope(RouterScope);
     const parameters = atom((get) => {
         return new Pattern(scopeValue).match(get(LocationAtom).pathname).parameters
     })
 
-    const location = atom((get) => get(LocationAtom),
-        (_, set, value) => set(LocationAtom, value)
-    )
-
     return {
         pattern: new Pattern(scopeValue),
-        parameters,
-        location
+        location: LocationAtom,
+        parameters
     }
+
 });
 
 export const usePattern = () => useMolecule(RouteMolecule).pattern

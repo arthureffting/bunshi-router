@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useCallback} from "react";
 import {RouteProvider, usePattern} from "./Scope";
 import {useLocation} from "./Go";
 import {Pattern} from "./Pattern";
@@ -24,14 +24,19 @@ export const Router = (props: {
 }) => {
     const pattern = usePattern()
     const location = useLocation()
-    return <RouteProvider value={(props.root ? new Pattern() : pattern).extend(props.base).value}>
+
+    const routePattern = useCallback(() => {
+        return (props.root ? new Pattern() : pattern).extend(props.base)
+    }, [props.root, props.base, pattern])
+
+    return <RouteProvider value={routePattern().value}>
         {(Array.isArray(props.children) ? props.children : [props.children])
             .find(route => {
                 if (!route.props.path) {
                     // A route with no path definition has no path requirements, always matches
                     return true;
                 } else if (location.pathname) {
-                    return pattern.extend(route.props.path).match(location.pathname).valid
+                    return routePattern().extend(route.props.path).match(location.pathname).valid
                 } else return false;
             })}
     </RouteProvider>
