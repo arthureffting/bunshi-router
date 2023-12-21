@@ -1,3 +1,3 @@
 export {Route, Router} from "./Router";
-export {useGo, into, back, set, useLocation} from "./Go"
-export {useParameters, usePattern, RouteMolecule, RouteProvider} from "./Scope"
+export {useGo, withParameters, into, to, back, set, useLocation} from "./Go"
+export {RouteMolecule, useParameters, usePattern, RouteProvider} from "./Scope"

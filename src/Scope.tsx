@@ -1,9 +1,9 @@
 import {createScope, molecule} from "bunshi";
 import {atom, useAtomValue} from "jotai";
 import {Pattern} from "./Pattern";
-import {locationAtom} from "./Go";
 import {ScopeProvider, useMolecule} from "bunshi/react";
 import React from "react";
+import {atomWithLocation} from "jotai-location";
 
 const RouterScope = createScope("/");
 
@@ -16,14 +16,22 @@ export const RouteProvider = (props: {
     </ScopeProvider>
 }
 
+const LocationAtom = atomWithLocation()
+
 export const RouteMolecule = molecule((_, scope) => {
     const scopeValue = scope(RouterScope);
     const parameters = atom((get) => {
-        return new Pattern(scopeValue).getParameters(get(locationAtom).pathname)
+        return new Pattern(scopeValue).match(get(LocationAtom).pathname).parameters
     })
+
+    const location = atom((get) => get(LocationAtom),
+        (_, set, value) => set(LocationAtom, value)
+    )
+
     return {
         pattern: new Pattern(scopeValue),
-        parameters
+        parameters,
+        location
     }
 });
 

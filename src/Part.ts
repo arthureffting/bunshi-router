@@ -2,7 +2,7 @@ const SINGLE_WILDCARD = "?";
 const MULTI_WILDCARD = "...";
 
 export class Part {
-    constructor(public value: string) {
+    constructor(public index: number, public value: string) {
 
     }
 
@@ -40,7 +40,7 @@ export class Part {
         return this.value.startsWith("{") && this.value.endsWith("}")
     }
 
-    get name(){
+    get name() {
         return this.value.substring(1, this.value.length - 1)
     }
 
