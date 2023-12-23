@@ -1,6 +1,6 @@
 # bunshi-router
 
-Simple library to provide routing based on [bunshi](https://www.bunshi.org/) and [jotai-location](https://github.com/jotaijs/jotai-location).
+Lightweight [open-source]("https://github.com/arthureffting/bunshi-router") library to provide routing based on [bunshi](https://www.bunshi.org/) and [jotai-location](https://github.com/jotaijs/jotai-location).
 
 # Usage
 
