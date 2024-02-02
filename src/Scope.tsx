@@ -16,14 +16,28 @@ export const RouteProvider = (props: {
     </ScopeProvider>
 }
 
-const LocationAtom = atomWithLocation()
+export interface Location {
+    pathname?: string;
+    searchParams?: URLSearchParams;
+}
+
+export type LocationUpdate = Location | ((prev: Location) => Location)
+
+const LocationProxy = atomWithLocation()
+
+const HistoryAtom = atom<Location[]>([] as Location[])
+
+export const LocationAtom = atom((get) => {
+    return get(LocationProxy)
+}, (get, set, value: LocationUpdate) => {
+    set(HistoryAtom, [...get(HistoryAtom), get(LocationProxy)])
+    set(LocationProxy, value)
+})
 
 export const RouteMolecule = molecule((_, scope) => {
 
     const scopeValue = scope(RouterScope);
-    const parameters = atom((get) => {
-        return new Pattern(scopeValue).match(get(LocationAtom).pathname).parameters
-    })
+    const parameters = atom((get) => new Pattern(scopeValue).match(get(LocationAtom)).parameters)
 
     return {
         pattern: new Pattern(scopeValue),
@@ -35,4 +49,4 @@ export const RouteMolecule = molecule((_, scope) => {
 
 export const usePattern = () => useMolecule(RouteMolecule).pattern
 
-export const useParameters = () => useAtomValue(useMolecule(RouteMolecule).parameters)
+export const usePathParameters = () => useAtomValue(useMolecule(RouteMolecule).parameters)

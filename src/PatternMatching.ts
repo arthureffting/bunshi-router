@@ -1,5 +1,6 @@
 // An expression consists of a string which represents a path
 import {Pattern} from "./Pattern";
+import {Location} from "./Scope";
 
 export class PatternMatching {
 
@@ -7,7 +8,7 @@ export class PatternMatching {
     private _parameters: { [key: string]: string }
 
     constructor(private _expression: Pattern,
-                private _location: Pattern) {
+                private _location: Location) {
         this._valid = this.checkValidity()
         this._parameters = this.checkParameters()
     }
@@ -23,10 +24,10 @@ export class PatternMatching {
     private checkValidity() {
 
         const patternParts = this._expression.parts
-
+        const locationPattern = new Pattern(this._location.pathname)
 
         if(patternParts.length === 0){
-            return this._location.parts.length === 0
+            return locationPattern.parts.length === 0
         }
 
         if (patternParts[patternParts.length - 1].isMultiWildcard()) {
@@ -38,10 +39,10 @@ export class PatternMatching {
             }
         }
 
-        const minSize = Math.min(patternParts.length, this._location.parts.length);
+        const minSize = Math.min(patternParts.length, locationPattern.parts.length);
         for (let i = 0; i < minSize; i++) {
             const routePart = patternParts[i];
-            const locationPart = this._location.parts[i];
+            const locationPart = locationPattern.parts[i];
             if (!routePart.equals(locationPart)) {
                 if (routePart.isIndependentFrom(locationPart)) {
                     return false;
@@ -51,24 +52,32 @@ export class PatternMatching {
             }
         }
 
-        if (patternParts.length == this._location.parts.length) {
+        if (patternParts.length == locationPattern.parts.length) {
             // All parts were equivalent and they have the same length
             return true;
-        } else if (this._location.parts.length > patternParts.length) {
+        } else if (locationPattern.parts.length > patternParts.length) {
             // Path is more specific than route
             return patternParts[patternParts.length - 1].isMultiWildcard()
         } else {
             // Route is more specific than path
-            return patternParts[this._location.parts.length].isMultiWildcard()
+            return patternParts[locationPattern.parts.length].isMultiWildcard()
         }
     }
 
     private checkParameters: () => { [key: string]: string } = () => {
-        if (!this._location) return {}
-        else {
-            const parameters: { [key: string]: string } = {}
+
+        const parameters: { [key: string]: string } = {}
+
+        if (this._location){
+
+            this._location.searchParams?.forEach(((value, key) => {
+                parameters[key] = value
+            }))
+
+
             const patternParts = this._expression.parts
-            const locationParts = this._location.parts
+            const locationPattern = new Pattern(this._location.pathname)
+            const locationParts = locationPattern.parts
             const max = Math.max(patternParts.length, locationParts.length)
             for (let i = 0; i < max; i++) {
                 if (patternParts[i]?.isSingleWildcard() && locationParts[i]) {
@@ -76,7 +85,7 @@ export class PatternMatching {
                     parameters[variableName] = locationParts[i].value
                 }
             }
-            return parameters
         }
+        return parameters
     }
 }

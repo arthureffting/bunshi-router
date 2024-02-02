@@ -2,10 +2,14 @@ import {useAtomValue, useSetAtom} from "jotai";
 import {Pattern} from "./Pattern";
 import {RouteMolecule} from "./Scope";
 import {useMolecule} from "bunshi/react";
+import {Location} from "./Scope";
 
-export type Location = {
-    pathname?: string;
-    searchParams?: URLSearchParams;
+export const parseLocation = (relativePath: string) => {
+    const url = new URL(relativePath, "http://dummy");
+    return {
+        pathname: url.pathname,
+        searchParams: new URLSearchParams(url.search)
+    }
 }
 
 export type LocationTransformer = (prev: Location, pattern: Pattern) => Location
@@ -32,21 +36,32 @@ export const to: (path: string) => LocationTransformer = (path) => {
 }
 
 
-export const withParameters = (parameters: { [key: string]: string }, inner: LocationTransformer) => {
+export const withQueryParameters = (parameters: { [key: string]: string }, inner: LocationTransformer) => {
+    return (prev: Location, pattern : Pattern) => {
+        const location = inner(prev, pattern)
+        const params = location.searchParams ?? new URLSearchParams()
+        Object.keys(parameters).forEach(key => {
+            params.set(key, parameters[key])
+        })
+        return {
+            ...location,
+            searchParams: params
+        }
+    }
+}
+export const withPathParameters = (parameters: { [key: string]: string }, inner: LocationTransformer) => {
     return (prev: Location, pattern: Pattern) => {
         const location = inner(prev, pattern)
         const locationPattern = new Pattern(location.pathname)
-        const filled = locationPattern.fill(parameters)
-        const params = location.searchParams ?? new URLSearchParams()
-        Object.keys(parameters)
-            .filter(name => !locationPattern.hasVariable(name))
-            .forEach(queryParameter => {
-                params.append(queryParameter, parameters[queryParameter])
-            })
+        const filled = new Pattern(locationPattern
+            .parts
+            .filter(part => !part.isMultiWildcard())
+            .map(part => part.value)
+            .join("/"))
+            .fill(parameters)
         return {
-            ...prev,
-            pathname: filled.value,
-            searchParams: params
+            ...location,
+            pathname: filled.value
         }
     }
 }
@@ -64,12 +79,7 @@ export const into: (...newParts: string[]) => LocationTransformer = (...newParts
 export const set: (parameters: {
     [key: string]: string
 }) => LocationTransformer = (parameters) => {
-    return (prev: Location, base: Pattern) => {
-        return {
-            ...prev,
-            pathname: base.fill(parameters).value
-        }
-    }
+    return withPathParameters(parameters, (prev) => prev)
 }
 
 export const useGo = () => {

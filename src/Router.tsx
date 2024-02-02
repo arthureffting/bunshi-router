@@ -1,10 +1,20 @@
-import React, {useCallback} from "react";
+import React, {useCallback, useEffect} from "react";
 import {RouteProvider, usePattern} from "./Scope";
-import {useLocation} from "./Go";
+import {LocationTransformer, useGo, useLocation} from "./Go";
 import {Pattern} from "./Pattern";
 
 export interface RouteProps {
     path?: string
+}
+
+export const Redirect = (props: {
+    go: LocationTransformer
+}) => {
+    const go = useGo()
+    useEffect(() => {
+        go(props.go)
+    }, []);
+    return <></>
 }
 
 export const Route: React.FunctionComponent<RouteProps & {
@@ -24,7 +34,6 @@ export const Router = (props: {
 }) => {
     const pattern = usePattern()
     const location = useLocation()
-
     const routePattern = useCallback(() => {
         return (props.root ? new Pattern() : pattern).extend(props.base)
     }, [props.root, props.base, pattern])
@@ -36,7 +45,7 @@ export const Router = (props: {
                     // A route with no path definition has no path requirements, always matches
                     return true;
                 } else if (location.pathname) {
-                    return routePattern().extend(route.props.path).match(location.pathname).valid
+                    return routePattern().extend(route.props.path).match(location).valid
                 } else return false;
             })}
     </RouteProvider>

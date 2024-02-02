@@ -1,6 +1,6 @@
 {
   "name": "bunshi-router",
-  "version": "1.1.0",
+  "version": "1.1.4",
   "description": "Lightweight router based on bunshi (and jotai)",
   "author": "Effting, Arthur",
   "repository": {
@@ -22,16 +22,20 @@
     "test": "jest"
   },
   "dependencies": {
+    "@testing-library/react": "^14.1.2",
     "bunshi": "^2.0.2",
     "jotai": "^2.6.0",
     "jotai-location": "^0.5.2"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
+    "@testing-library/jest-dom": "^6.1.5",
     "@types/jest": "^29.5.11",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-location-mock": "^2.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "ts-jest": "^29.1.1",

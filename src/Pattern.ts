@@ -1,5 +1,6 @@
 import {Part} from "./Part";
 import {PatternMatching} from "./PatternMatching";
+import {Location} from "./Scope";
 
 export class Pattern {
 
@@ -13,8 +14,8 @@ export class Pattern {
         } else return this._value
     }
 
-    match = (path: string | Pattern | undefined) => {
-        return new PatternMatching(this, path ? (typeof path === "string" ? new Pattern(path) : path) : new Pattern());
+    match = (path: Location | undefined) => {
+        return new PatternMatching(this, path ?? {});
     }
 
     get parts() {
