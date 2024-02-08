@@ -30,7 +30,9 @@ const HistoryAtom = atom<Location[]>([] as Location[])
 export const LocationAtom = atom((get) => {
     return get(LocationProxy)
 }, (get, set, value: LocationUpdate) => {
-    set(HistoryAtom, [...get(HistoryAtom), get(LocationProxy)])
+    const history = get(HistoryAtom)
+    const currentLocation = get(LocationProxy)
+    set(HistoryAtom, [...history, currentLocation])
     set(LocationProxy, value)
 })
 
@@ -46,6 +48,10 @@ export const RouteMolecule = molecule((_, scope) => {
     }
 
 });
+
+
+
+export const useHistory = () => useAtomValue(HistoryAtom)
 
 export const usePattern = () => useMolecule(RouteMolecule).pattern
 

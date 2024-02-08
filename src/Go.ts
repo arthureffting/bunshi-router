@@ -1,6 +1,6 @@
 import {useAtomValue, useSetAtom} from "jotai";
 import {Pattern} from "./Pattern";
-import {RouteMolecule} from "./Scope";
+import {LocationAtom, RouteMolecule, useHistory} from "./Scope";
 import {useMolecule} from "bunshi/react";
 import {Location} from "./Scope";
 
@@ -12,19 +12,18 @@ export const parseLocation = (relativePath: string) => {
     }
 }
 
-export type LocationTransformer = (prev: Location, pattern: Pattern) => Location
+export type LocationTransformer = (prev: Location, pattern: Pattern, history: Location[]) => Location
 
-
-export const useLocation = () => useAtomValue(useMolecule(RouteMolecule).location)
+export const useLocation = () => useAtomValue(LocationAtom)
 
 export const back: (by: number) => LocationTransformer = (by) => {
-    let parts = (location.pathname ?? "").split("/")
-        .filter(x => x && x.length > 0)
-    return (prev: Location) => ({
-        ...prev,
-        searchParams: new URLSearchParams(),
-        pathname: parts.length === 1 ? "/" : parts.slice(0, parts.length - by).join("/"),
-    })
+    return (prev, _, history) => {
+        if(history.length > by){
+            return history[history.length - by]
+        }else {
+            return prev
+        }
+    }
 }
 
 export const to: (path: string) => LocationTransformer = (path) => {
@@ -37,8 +36,8 @@ export const to: (path: string) => LocationTransformer = (path) => {
 
 
 export const withQueryParameters = (parameters: { [key: string]: string }, inner: LocationTransformer) => {
-    return (prev: Location, pattern : Pattern) => {
-        const location = inner(prev, pattern)
+    return (prev: Location, pattern: Pattern, history: Location[]) => {
+        const location = inner(prev, pattern, history)
         const params = location.searchParams ?? new URLSearchParams()
         Object.keys(parameters).forEach(key => {
             params.set(key, parameters[key])
@@ -50,8 +49,8 @@ export const withQueryParameters = (parameters: { [key: string]: string }, inner
     }
 }
 export const withPathParameters = (parameters: { [key: string]: string }, inner: LocationTransformer) => {
-    return (prev: Location, pattern: Pattern) => {
-        const location = inner(prev, pattern)
+    return (prev: Location, pattern: Pattern, history: Location[]) => {
+        const location = inner(prev, pattern, history)
         const locationPattern = new Pattern(location.pathname)
         const filled = new Pattern(locationPattern
             .parts
@@ -83,7 +82,8 @@ export const set: (parameters: {
 }
 
 export const useGo = () => {
-    const {pattern, location} = useMolecule(RouteMolecule)
-    const setLocation = useSetAtom(location)
-    return (transform: LocationTransformer) => setLocation((prev: Location) => transform(prev, pattern))
+    const history = useHistory()
+    const {pattern} = useMolecule(RouteMolecule)
+    const setLocation = useSetAtom(LocationAtom)
+    return (transform: LocationTransformer) => setLocation((prev: Location) => transform(prev, pattern, history))
 }
