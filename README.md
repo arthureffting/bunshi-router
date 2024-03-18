@@ -19,7 +19,7 @@ const MyComponent = () => {
             <Dashboard/>
         </Route>
         <Route>
-            <Redirect go={to("/dashboard")}/>
+            <Fallback/>
         </Route>
     </Router>
 
