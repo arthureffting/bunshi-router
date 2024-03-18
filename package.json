@@ -1,6 +1,6 @@
 {
   "name": "bunshi-router",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "description": "Lightweight router based on bunshi (and jotai)",
   "author": "Effting, Arthur",
   "repository": {
